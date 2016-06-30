@@ -8,18 +8,26 @@ import compose from 'lodash/flowRight';
 import isString from 'lodash/isString';
 import isArray from 'lodash/isArray';
 
+// Validate the options given to the form.
+// formkey is the name of the form
+// entityPathArray is all the entities you want to read the metadata from.
 const validateFormOptions = ({formKey, entityPathArray}) => {
     if (!isString(formKey)) throw new Error('FormConnect: You must provide a "formKey" option as a string to the form connect.');
     if (!isArray(entityPathArray)) throw new Error('FormConnect: You must provide a "entityPathArray" option as an array to the form connect.');
 }
 
+// Select the form part of the state in the redux store.
+// This will be the default argument pass to redux connect.
 const internalMapStateToProps = (state, formKey) => {
+    // selector on the form state
     const formCandidate = find(state.forms, {formKey});
     const resultingProps = {...formCandidate};
     if (resultingProps) resultingProps.getUserInput = () => formCandidate.fields.reduce((entities, field) => ({...entities, [field.entityPath]: {...entities[field.entityPath], [field.name]: field.rawInputValue}}), {})
     return resultingProps;
 };
 
+// Wrap with the dispatch method all the 'common' actions linked to the form.
+// This will be provide by default to to the redux connect dispatch.
 const internalMapDispatchToProps = (dispatch, loadAction, saveAction, formKey, nonValidatedFields) => {
     const resultingActions = {};
     if (loadAction) resultingActions.load = (...loadArgs) => dispatch(loadAction(...loadArgs));
@@ -63,6 +71,7 @@ const getExtendedComponent = (ComponentToConnect: ReactClass<{}>, formOptions: F
         }
 
         _toggleEdit(edit) {
+            // Read the dispatch inside the context to avoid a connect
             const {store: {dispatch}} = this.context;
             if (!edit) {
                 // Edit is set to false, this means the user cancelled the edition, so dispatch a syncFormEntities action
@@ -73,11 +82,12 @@ const getExtendedComponent = (ComponentToConnect: ReactClass<{}>, formOptions: F
 
         render() {
             const {_behaviours, ...otherProps} = this.props;
+            // Notifiy the coomponent that we extend the behaviour.
             const behaviours = {connectedToForm: true, ..._behaviours};
             return <ComponentToConnect {...otherProps} _behaviours={behaviours} onInputChange={::this._onInputChange} onInputBlur={::this._onInputBlur} onInputBlurList={::this._onInputBlurList} toggleEdit={::this._toggleEdit} entityPathArray={formOptions.entityPathArray} />;
         }
     }
-    // Extract the redux methods without a connector
+    // Extract the redux methods without a connector to avoid a function wrapping.
     FormComponent.contextTypes = {
         store: PropTypes.shape({
             subscribe: PropTypes.func.isRequired,
@@ -88,7 +98,8 @@ const getExtendedComponent = (ComponentToConnect: ReactClass<{}>, formOptions: F
     return FormComponent;
 };
 
-
+// This uses Flowtype notation.
+// Our goal here is to provide usefull signature and informations
 // FormOptions will be used by the form connector
 type FormOptions = {
   // the form key will be used to name the associated state node in the form.
