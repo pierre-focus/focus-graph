@@ -22,6 +22,34 @@ A component `Component = f(state, props)`
 
 ## Concepts
 
+## Flow types
+
+We choose to use flowtype notation (as a test for now) in order to provide efficient signature to everyone who use the lib.
+We don't want to add typing across the whole library but on all public entry points.
+Both flow and typscript share a similiar way of declaring types but as typscript is quite all or nothing, we use flow.
+
+// This uses Flowtype notation.
+// Our goal here is to provide usefull signature and informations
+// FormOptions will be used by the form connector
+type FormOptions = {
+  // the form key will be used to name the associated state node in the form.
+  formKey: string,
+  // an array of all the entity paths the form should listen to. An entity path is the path in the dataset to reach the entity
+  entityPathArray:  Array<string>,
+  // a function taking the redux state as an argument and returning the props that should be given to the form component
+  mapStateToProps: Function,
+  // a function taking the redux dispatch function as an argument and returning the props that should be given to the form component
+  mapDispatchToProps: Function,
+  // the entity load action. If provided, a 'load' function will be provided as a prop, automatically dispatching the loadAction output
+  loadAction: Function,
+  // same as loadAction but with the save
+  saveAction: Function,
+  // The array of fields you don't want to validate.
+  nonValidatedFields: Array<string>
+}
+
+
+
 
 ## What we rely on
 
